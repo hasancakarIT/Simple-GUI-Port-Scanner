@@ -3,6 +3,13 @@ import socket
 from tkinter import *
 from tkinter import ttk
 
+#scan variables
+firstPort = 1
+lastPort = 1024
+log = []
+portRange = []
+target = 'localhost'
+
 #establishes network connectivity
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -19,32 +26,32 @@ def scanner():
     #target IP entry
     Label(GUI, text="Enter target to scan and port range below:", font="Helvetica 12").pack()
     targetBox = Entry(GUI)
-    target = targetBox.get()
     #port range
-    firstPort = IntVar(GUI, 1)
-    lastPort = IntVar(GUI, 1023)
     #first port to be scanned
-    firstPortBox = Entry(GUI, textvariable=firstPort)
+    firstPortBox = Entry(GUI, text = 1)
     #last port to be scanned
-    lastPortBox = Entry(GUI, textvariable=lastPort)
+    lastPortBox = Entry(GUI, text = 1023)
     #scrolling ouput box
     output = Listbox(GUI, width=50, height=20)
     #sets the range of user insputs
-    portRange = range(int(firstPortBox.get()), int(lastPortBox.get()))
-    port = portRange[0]
     #function for port scan
-    def portScan(port):
+    def portScan():
         #deletes any previous list content
         output.delete(0,'end')
-        s.bind((target, port))
+        #sets variables
+        firstPort = int(firstPortBox.get())
+        lastPort = int(lastPortBox.get())
+        target = socket.gethostbyname(str(targetBox.get()))
+        #establishes range of ports
+        portRange = range(firstPort, lastPort)
+        #variable for defining current port
+        port = portRange[0]
         #while the port is less than or equal to the final port
-        while int(lastPortBox.get()) >= port:
+        while int(lastPort) >= port:
             #if failure to connect
-            if s.connect((s.bind((target, port)))):
-                output.insert(port, str(port) + ": Open")
-                None
-            #if successfully connects
-            elif s.connect_ex((target, port)):
+            if s.connect_ex((target, port)):
+                output.insert(port, str(port) + ": Closed")
+            else:
                 output.insert(port, str(port) + ": Open")
             #incrementally increases port
             port = int(port + 1)
@@ -52,7 +59,7 @@ def scanner():
     targetBox.pack(pady=5)
     firstPortBox.pack(pady=5)
     lastPortBox.pack(pady=5)
-    scanButton = Button(GUI, text="Scan", command=lambda: portScan(port)).pack(pady=5)
+    scanButton = Button(GUI, text="Scan", command=lambda: portScan()).pack(pady=5)
     output.pack(pady=5)
     #loop for running GUI#
     GUI.mainloop()
